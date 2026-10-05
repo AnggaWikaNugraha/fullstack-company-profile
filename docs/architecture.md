@@ -1,6 +1,6 @@
 # 🏗️ Architecture
 
-[← Back to README](../README.md)
+[← Back to README](../README.md) · [🇮🇩 Bahasa Indonesia](id/architecture.md)
 
 The platform combines **Headless CMS Architecture** with **Astro Islands Architecture**. Content, rendering, and transactional logic are separated into clear layers.
 
@@ -30,7 +30,7 @@ flowchart TB
 
     subgraph Backend["Strapi Server"]
         REST["REST API"]
-        Custom["Custom Controllers<br/>availability · bookings · reservations"]
+        Custom["Custom Controllers<br/>availability · orders · consultation bookings"]
         Admin["Admin Panel"]
         Hooks["Webhooks & Lifecycle Hooks"]
     end
@@ -75,10 +75,10 @@ Vue components are hydrated only where client-side interaction is required:
 
 | Island | Hydration directive | Why |
 | --- | --- | --- |
-| Booking form | `client:load` | Needed immediately on booking pages |
-| Date picker / availability checker | `client:load` | Core interaction on villa detail |
+| Order form | `client:load` | Needed immediately on the order page |
+| Start-date picker / availability checker | `client:load` | Core interaction on package detail |
 | Product filter | `client:idle` | Can wait until the main thread is free |
-| Restaurant reservation | `client:visible` | Usually below the fold |
+| Consultation booking | `client:visible` | Usually below the fold |
 | Interactive gallery | `client:visible` | Only hydrate when scrolled into view |
 
 The rest of the website ships **static HTML with little or no JavaScript**.
@@ -87,9 +87,9 @@ The rest of the website ships **static HTML with little or no JavaScript**.
 
 The headless CMS and backend API. It provides:
 
-- **Content types** for villas, restaurants, menus, products, blog posts, categories, events, landing pages, testimonials, facilities, FAQs, guest guides
+- **Content types** for packages, features, portfolio projects, consultations, add-ons, digital products, blog posts, categories, events, landing pages, testimonials, FAQs, client guides
 - **Admin panel** so editors can manage content without changing frontend code
-- **Custom endpoints** for transactional logic such as availability, bookings, and reservations
+- **Custom endpoints** for transactional logic such as availability, orders, and consultation bookings
 - **Webhooks** that trigger frontend rebuilds when content is published
 - **Lifecycle hooks** that send email notifications
 
@@ -97,7 +97,7 @@ See [content-model.md](content-model.md) for the full data model.
 
 ### Supabase PostgreSQL
 
-The primary database for Strapi content and application data such as bookings and reservations.
+The primary database for Strapi content and application data such as orders and consultation bookings.
 
 ---
 
@@ -107,15 +107,16 @@ The primary database for Strapi content and application data such as bookings an
 | --- | --- | --- |
 | Home | SSG | Rebuilt on content publish |
 | About | SSG | |
-| Villa Listing | SSG / SSR | SSR if listing depends on live filters |
-| Villa Detail | SSG | Availability loaded by a Vue island |
+| Package Listing | SSG / SSR | SSR if listing depends on live filters |
+| Package Detail | SSG | Availability loaded by a Vue island |
+| Portfolio / Portfolio Detail | SSG | `getStaticPaths` from Strapi slugs |
 | Blog / Blog Detail | SSG | `getStaticPaths` from Strapi slugs |
-| Restaurant | SSG | Reservation form is a Vue island |
+| Consultation | SSG | Booking form is a Vue island |
 | Product Catalog | SSG / SSR | SSR for search & filter query params |
 | Events | SSG | |
-| Guest Guide | SSG | |
+| Client Guide | SSG | |
 | Landing Pages | SSG | Built from Strapi dynamic zones |
-| Booking | Vue Island | Dynamic API |
+| Order | Vue Island | Dynamic API |
 | Availability | Vue Island | Dynamic API, never cached |
 
 ---
@@ -141,7 +142,7 @@ Guidelines:
 
 - All Strapi calls go through a typed service layer in `apps/web/src/services/`.
 - Shared response types live in `packages/shared/` so the web app and the CMS use the same types.
-- Public content is read with a **read-only API token**. Write operations such as bookings and reservations go through **custom endpoints** that validate input on the server.
+- Public content is read with a **read-only API token**. Write operations such as orders and consultation bookings go through **custom endpoints** that validate input on the server.
 
 ---
 
@@ -151,15 +152,16 @@ Guidelines:
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/api/villas` | List villas |
-| `GET` | `/api/villas/:slug` | Villa detail |
-| `GET` | `/api/villas/:id/availability?checkIn=&checkOut=&guests=` | Check availability & price |
-| `POST` | `/api/bookings` | Create a booking (`pending_payment`) |
-| `GET` | `/api/bookings/:code` | Look up a booking by booking code |
+| `GET` | `/api/packages` | List service packages |
+| `GET` | `/api/packages/:slug` | Package detail with tiers & features |
+| `GET` | `/api/packages/:id/availability?tier=&startDate=&addOns=` | Check capacity, end date, price & deposit |
+| `POST` | `/api/orders` | Create an order (`pending_payment`) |
+| `GET` | `/api/orders/:code` | Look up an order by order code |
 | `POST` | `/api/payments/notification` | Midtrans payment webhook |
-| `GET` | `/api/restaurants/:slug` | Restaurant profile & menu |
-| `POST` | `/api/table-reservations` | Create a table reservation |
-| `GET` | `/api/products` | Products with filters |
+| `GET` | `/api/portfolio-projects` | Portfolio projects |
+| `GET` | `/api/consultations/:slug` | Consultation profile, hours & add-on list |
+| `POST` | `/api/consultation-bookings` | Create a consultation booking |
+| `GET` | `/api/products` | Digital products with filters |
 | `GET` | `/api/posts` | Blog posts |
 | `GET` | `/api/events` | Events |
 | `GET` | `/api/landing-pages/:slug` | Landing page with dynamic zone blocks |

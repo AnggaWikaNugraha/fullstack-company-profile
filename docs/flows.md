@@ -1,6 +1,6 @@
 # 🔄 Flows
 
-[← Back to README](../README.md)
+[← Back to README](../README.md) · [🇮🇩 Bahasa Indonesia](id/flows.md)
 
 This page describes the main user and system flows of the platform.
 
@@ -9,10 +9,10 @@ This page describes the main user and system flows of the platform.
 1. [Visitor Journey](#1-visitor-journey)
 2. [Content Publishing](#2-content-publishing)
 3. [Page Request & Rendering](#3-page-request--rendering)
-4. [Villa Availability Check](#4-villa-availability-check)
-5. [Villa Booking & Payment](#5-villa-booking--payment)
-6. [Booking Status Lifecycle](#6-booking-status-lifecycle)
-7. [Restaurant Table Reservation](#7-restaurant-table-reservation)
+4. [Project Availability Check](#4-project-availability-check)
+5. [Project Ordering & Payment](#5-project-ordering--payment)
+6. [Order Status Lifecycle](#6-order-status-lifecycle)
+7. [Consultation Booking](#7-consultation-booking)
 8. [Product Search & Filter](#8-product-search--filter)
 9. [Email Notifications](#9-email-notifications)
 
@@ -20,31 +20,33 @@ This page describes the main user and system flows of the platform.
 
 ## 1. Visitor Journey
 
-How a guest moves through the website.
+How a potential client moves through the website.
 
 ```mermaid
 flowchart TD
     Start(["Visitor lands on site"]) --> Entry{"Entry point"}
-    Entry -- "Search / social" --> Home["Home"]
+    Entry -- "Portfolio navbar / search" --> Home["Home"]
     Entry -- "Campaign link" --> LP["Landing Page"]
-    Entry -- "Article link" --> Blog["Blog Post"]
+    Entry -- "Article link" --> Blog["Blog Post / Case Study"]
 
-    Home --> Villas["Villa Listing"]
-    Home --> Resto["Restaurant"]
+    Home --> Packages["Package Listing"]
+    Home --> Portfolio["Portfolio"]
+    Home --> Consult["Consultation"]
     Home --> Events["Events"]
-    Home --> Products["Product Catalog"]
-    LP --> Villas
-    Blog --> Villas
+    Home --> Products["Digital Products"]
+    LP --> Packages
+    Blog --> Packages
+    Portfolio --> Packages
 
-    Villas --> Detail["Villa Detail"]
-    Detail --> Avail["Check Availability"]
-    Avail --> Book["Booking Form"]
-    Book --> Pay["Payment"]
-    Pay --> Confirm(["Booking Confirmed"])
-    Confirm --> Guide["Guest Guide<br/>Check-in info · Policies · FAQ"]
+    Packages --> Detail["Package Detail"]
+    Detail --> Avail["Check Start-Date Availability"]
+    Avail --> Order["Order Form + Project Brief"]
+    Order --> Pay["Deposit Payment"]
+    Pay --> Confirm(["Order Confirmed"])
+    Confirm --> Guide["Client Guide<br/>Onboarding · Policies · FAQ"]
 
-    Resto --> Reserve["Table Reservation"]
-    Reserve --> RConfirm(["Reservation Received"])
+    Consult --> Book["Book a Consultation"]
+    Book --> BConfirm(["Booking Received"])
 ```
 
 ---
@@ -78,7 +80,7 @@ sequenceDiagram
 ```
 
 > [!TIP]
-> Content that must always be live, such as availability and prices at booking time, is **never** taken from the static build. It is always fetched at runtime.
+> Content that must always be live, such as project slots and prices at order time, is **never** taken from the static build. It is always fetched at runtime.
 
 ---
 
@@ -90,7 +92,7 @@ How a request is served depending on the page type.
 flowchart TD
     Req(["HTTP request"]) --> Type{"Page type?"}
 
-    Type -- "SSG<br/>home, blog, villa detail…" --> Static["Serve pre-built HTML<br/>from CDN"]
+    Type -- "SSG<br/>home, blog, package detail…" --> Static["Serve pre-built HTML<br/>from CDN"]
     Type -- "SSR<br/>catalog with filters…" --> SSR["Astro server route"]
     SSR --> Fetch["Fetch from Strapi API"]
     Fetch --> Render["Render HTML"]
@@ -107,145 +109,149 @@ flowchart TD
 
 ---
 
-## 4. Villa Availability Check
+## 4. Project Availability Check
 
-Runs inside the availability **Vue island** on the villa detail page.
+Runs inside the availability **Vue island** on the package detail page. The team can only run a limited number of projects at the same time, so a start date is available only while there is free capacity for the whole project timeline.
 
 ```mermaid
 flowchart TD
-    A(["Guest selects dates & guests"]) --> V{"Valid input?<br/>check-out after check-in<br/>guests ≤ max guests"}
+    A(["Client selects tier, add-ons<br/>& start date"]) --> V{"Valid input?<br/>start date ≥ today + lead time<br/>tier belongs to package"}
     V -- "No" --> Err["Show validation error"]
-    V -- "Yes" --> Call["GET /api/villas/:id/availability"]
-    Call --> Q["Find bookings that overlap the<br/>requested dates and are still<br/>pending_payment or confirmed"]
-    Q --> Found{"Overlap found?"}
-    Found -- "Yes" --> NA["❌ Not available<br/>suggest other dates / villas"]
-    Found -- "No" --> Price["Calculate price<br/>nights × rate + season / promo"]
-    Price --> OK["✅ Available<br/>show total & 'Book now'"]
+    V -- "Yes" --> Call["GET /api/packages/:id/availability"]
+    Call --> End["Calculate end date<br/>start + tier duration + add-on weeks"]
+    End --> Q["Count orders that overlap the<br/>project timeline and are still<br/>pending_payment, confirmed or in_progress"]
+    Q --> Full{"Count ≥ project capacity?"}
+    Full -- "Yes" --> NA["❌ Fully booked<br/>suggest the next available start date"]
+    Full -- "No" --> Price["Calculate price<br/>tier price + add-ons ± promo<br/>deposit = total × deposit %"]
+    Price --> OK["✅ Available<br/>show end date, total, deposit & 'Order now'"]
 ```
 
-**Overlap rule.** An existing booking blocks the requested range when:
+**Capacity rule.** An existing order uses a slot in the requested timeline when:
 
 ```text
-existing.check_in  <  requested.check_out
+existing.start_date  <  requested.end_date
 AND
-existing.check_out >  requested.check_in
+existing.end_date    >  requested.start_date
 AND
-existing.status IN ('pending_payment', 'confirmed')
+existing.status IN ('pending_payment', 'confirmed', 'in_progress')
 ```
+
+The start date is available when `COUNT(overlapping orders) < SiteSetting.project_capacity`.
 
 ---
 
-## 5. Villa Booking & Payment
+## 5. Project Ordering & Payment
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor G as Guest
-    participant W as Booking Island (Vue)
+    actor C as Client
+    participant W as Order Island (Vue)
     participant S as Strapi API
     participant DB as PostgreSQL
     participant M as Midtrans
     participant E as Email (SMTP)
 
-    G->>W: Submit booking form
-    W->>S: POST /api/bookings
+    C->>W: Submit order form + project brief
+    W->>S: POST /api/orders
     S->>S: Validate input
-    S->>DB: Re-check availability (transaction)
-    alt Dates no longer available
+    S->>DB: Re-check capacity (transaction)
+    alt Slot no longer available
         S-->>W: 409 Conflict
-        W-->>G: Ask to choose other dates
+        W-->>C: Ask to choose another start date
     else Available
-        S->>DB: Create booking (pending_payment, expires in N min)
-        S->>M: Create Snap transaction
+        S->>DB: Create order (pending_payment, expires in N min)
+        S->>M: Create Snap transaction (deposit amount)
         M-->>S: Snap token
-        S-->>W: Booking code + Snap token
+        S-->>W: Order code + Snap token
         W->>M: Open Snap payment popup
-        G->>M: Pay
+        C->>M: Pay deposit
         M->>S: POST /api/payments/notification
         S->>S: Verify signature
         alt Payment success
             S->>DB: status = confirmed
             S->>E: Send confirmation email
-            E-->>G: Confirmation + guest guide link
+            E-->>C: Confirmation + client guide link
         else Payment failed / expired
             S->>DB: status = cancelled / expired
             S->>E: Send payment failed email
         end
-        W-->>G: Show result page
+        W-->>C: Show result page
     end
 ```
 
 **Key rules**
 
-- Availability is checked **twice**: once for display, and again inside a DB transaction when the booking is created. This prevents double bookings.
-- Pending bookings **expire** if they are not paid within the payment window, which frees up the dates.
-- The price is always **calculated on the server**. The client never sends a price that is trusted.
-- Payment webhooks are **signature-verified** before the booking status changes.
+- Capacity is checked **twice**: once for display, and again inside a DB transaction when the order is created. This prevents overbooking the team.
+- Pending orders **expire** if the deposit is not paid within the payment window, which frees up the slot.
+- The price and deposit are always **calculated on the server**. The client never sends a price that is trusted.
+- Payment webhooks are **signature-verified** before the order status changes.
+- The remaining balance is invoiced at handover. Paying it online is a [future improvement](../README.md#-roadmap).
 
 ---
 
-## 6. Booking Status Lifecycle
+## 6. Order Status Lifecycle
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending_payment: Booking created
-    pending_payment --> confirmed: Payment success
+    [*] --> pending_payment: Order created
+    pending_payment --> confirmed: Deposit paid
     pending_payment --> expired: Payment window passed
-    pending_payment --> cancelled: Guest cancels / payment failed
-    confirmed --> checked_in: Guest arrives
+    pending_payment --> cancelled: Client cancels / payment failed
+    confirmed --> in_progress: Project kickoff
     confirmed --> cancelled: Cancellation (policy applies)
-    checked_in --> completed: Guest checks out
+    in_progress --> completed: Project handed over
     expired --> [*]
     cancelled --> [*]
     completed --> [*]
 ```
 
-| Status | Blocks dates? | Description |
+| Status | Uses capacity? | Description |
 | --- | --- | --- |
-| `pending_payment` | ✅ | Waiting for payment within the payment window |
-| `confirmed` | ✅ | Paid and confirmed |
-| `checked_in` | ✅ | Guest is staying at the villa |
-| `completed` | ❌ | Stay finished |
-| `cancelled` | ❌ | Cancelled by guest, admin, or failed payment |
-| `expired` | ❌ | Not paid in time |
+| `pending_payment` | ✅ | Waiting for the deposit within the payment window |
+| `confirmed` | ✅ | Deposit paid, waiting for kickoff |
+| `in_progress` | ✅ | Project is being built |
+| `completed` | ❌ | Project handed over |
+| `cancelled` | ❌ | Cancelled by client, admin, or failed payment |
+| `expired` | ❌ | Deposit not paid in time |
 
 ---
 
-## 7. Restaurant Table Reservation
+## 7. Consultation Booking
 
-Reservations don't need online payment. Staff confirm them from the Strapi admin.
+Consultations don't need online payment. The consultant confirms them from the Strapi admin and sends the meeting link.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor G as Guest
-    participant W as Reservation Island (Vue)
+    actor C as Client
+    participant W as Consultation Island (Vue)
     participant S as Strapi API
     participant DB as PostgreSQL
-    actor St as Restaurant Staff
+    actor Co as Consultant
     participant E as Email
 
-    G->>W: Choose date, time, party size
-    W->>W: Validate against opening hours
-    W->>S: POST /api/table-reservations
-    S->>DB: Save reservation (pending)
-    S->>E: Notify restaurant staff
-    S-->>W: Reservation received
-    W-->>G: "We'll confirm shortly"
-    St->>S: Confirm or decline in Admin
+    C->>W: Choose consultation type, date, time & topic
+    W->>W: Validate against consultation hours
+    W->>S: POST /api/consultation-bookings
+    S->>DB: Save booking (pending)
+    S->>E: Notify consultant
+    S-->>W: Booking received
+    W-->>C: "We'll confirm shortly"
+    Co->>S: Confirm or decline in Admin
     S->>DB: Update status
-    S->>E: Send result to guest
-    E-->>G: Reservation confirmed / declined
+    S->>E: Send result to client
+    E-->>C: Booking confirmed (meeting link) / declined
 ```
 
 ```mermaid
 stateDiagram-v2
     [*] --> pending
-    pending --> confirmed: Staff confirms
-    pending --> declined: Fully booked
-    confirmed --> cancelled: Guest cancels
-    confirmed --> completed: Guest attended
-    confirmed --> no_show: Guest didn't come
+    pending --> confirmed: Consultant confirms
+    pending --> declined: Slot unavailable
+    confirmed --> cancelled: Client cancels
+    confirmed --> completed: Call held
+    confirmed --> no_show: Client didn't join
     declined --> [*]
     cancelled --> [*]
     completed --> [*]
@@ -258,8 +264,8 @@ stateDiagram-v2
 
 ```mermaid
 flowchart LR
-    A(["Guest types / picks filter"]) --> B["Debounce input<br/>(~300 ms)"]
-    B --> C["Sync filters to URL<br/>?q=&category=&sort="]
+    A(["Visitor types / picks filter"]) --> B["Debounce input<br/>(~300 ms)"]
+    B --> C["Sync filters to URL<br/>?q=&category=&tech=&sort="]
     C --> D["GET /api/products<br/>with Strapi filters"]
     D --> E["Render results in island"]
     C -. "shareable / SSR on reload" .-> F["SSR catalog page<br/>reads query params"]
@@ -275,11 +281,11 @@ Sent from Strapi lifecycle hooks or controllers through SMTP / Nodemailer.
 
 | Trigger | Recipient | Email |
 | --- | --- | --- |
-| Booking created | Guest | Booking received + payment instructions |
-| Payment success | Guest | Booking confirmation + guest guide link |
-| Payment success | Admin | New confirmed booking |
-| Payment failed / expired | Guest | Payment failed / booking expired |
-| Booking cancelled | Guest & Admin | Cancellation notice |
-| Reservation created | Restaurant staff | New table reservation |
-| Reservation confirmed / declined | Guest | Reservation result |
-| H-1 before check-in | Guest | Check-in reminder + directions *(future)* |
+| Order created | Client | Order received + deposit payment instructions |
+| Payment success | Client | Order confirmation + client guide link |
+| Payment success | Admin | New confirmed order |
+| Payment failed / expired | Client | Payment failed / order expired |
+| Order cancelled | Client & Admin | Cancellation notice |
+| Consultation booking created | Consultant | New consultation booking |
+| Consultation confirmed / declined | Client | Booking result + meeting link |
+| H-1 before kickoff | Client | Kickoff reminder + preparation checklist *(future)* |

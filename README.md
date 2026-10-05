@@ -1,10 +1,12 @@
 <div align="center">
 
-# 🌴 Luxury Hospitality Platform
+# 🧑‍💻 Service
 
-**A content-driven luxury villa, restaurant & lifestyle website built on a Headless CMS.**
+**A content-driven web development service platform built on a Headless CMS.**
 
-Company profile · Villa booking · Restaurant reservations · Product catalog · Blog · Events · Guest guide · Landing pages
+Agency profile · Service packages · Project ordering · Consultation booking · Digital products · Blog · Events · Client guide · Landing pages
+
+**🇬🇧 English** · [🇮🇩 Bahasa Indonesia](README.id.md)
 
 <br/>
 
@@ -32,12 +34,14 @@ Company profile · Villa booking · Restaurant reservations · Product catalog �
 
 ## 📖 Overview
 
-The platform combines a luxury villa **company profile**, **villa booking**, **restaurant** information and reservations, a **product catalog**, **blog**, **events**, a **guest guide**, and **dynamic landing pages** into one website.
+**Service** is the website for my web development business. It combines an **agency profile**, **service packages** that clients can **order and pay a deposit for online**, **consultation booking**, a **digital product catalog**, a **blog**, **events**, a **client guide**, and **dynamic landing pages** into one website.
 
 It is built on two ideas:
 
 - **Headless CMS**: all content lives in **Strapi** and is managed from the admin panel, so editors never need to touch frontend code.
-- **Astro Islands**: pages ship as fast, SEO-friendly static HTML. **Vue.js** hydrates only the parts that need interaction, such as booking forms, date pickers, and filters.
+- **Astro Islands**: pages ship as fast, SEO-friendly static HTML. **Vue.js** hydrates only the parts that need interaction, such as the order form, the start-date availability checker, and filters.
+
+The site is a standalone project, linked from the **Services** menu of my [portfolio](https://port-tau-azure.vercel.app/).
 
 > [!NOTE]
 > 🚧 This project is under active development. This repository currently contains the **documentation and flow design**. Implementation follows the [roadmap](#-roadmap).
@@ -48,15 +52,15 @@ It is built on two ideas:
 
 | Module | What it covers |
 | --- | --- |
-| 🏠 **Company Profile** | Home, about us, brand story, facilities, gallery, testimonials, contact |
-| 🏡 **Luxury Villas** | Listing, detail, rooms, amenities, gallery, pricing, availability |
-| 📅 **Booking System** | Date & guest selection, availability checker, booking form, confirmation, management |
-| 🍽️ **Restaurant** | Profile, menu, opening hours, gallery, table reservation |
-| 🛍️ **Product Catalog** | Listing, categories, detail, search & filtering |
-| 📰 **Blog** | Articles, travel guides, culinary content, hospitality stories, categories & tags |
-| 🎉 **Events** | Upcoming events, detail, weddings, private dining, corporate events |
-| 📘 **Guest Guide** | Check-in / check-out guide, villa policies, guest information, FAQ |
-| 🚀 **Landing Pages** | Promo campaigns, seasonal offers, honeymoon packages, villa & event promotions |
+| 🏠 **Agency Profile** | Home, about, team, work process, tech stack, portfolio, testimonials, contact |
+| 📦 **Service Packages** | Listing, detail, tiers, included features, sample work, pricing, start-date availability |
+| 🧾 **Project Ordering** | Tier, add-on & start-date selection, capacity checker, project brief form, deposit payment, confirmation, management |
+| 💬 **Consultation** | Consultation types, add-on & maintenance plan list, consultation hours, call booking |
+| 🛍️ **Digital Products** | Website templates, UI kits, starter kits: listing, categories, detail, search & filtering |
+| 📰 **Blog** | Tutorials, case studies, business & digital tips, categories & tags |
+| 🎉 **Events** | Upcoming webinars, workshops, bootcamps, corporate training |
+| 📘 **Client Guide** | Onboarding guide, work process, revision & refund policies, SLA, FAQ |
+| 🚀 **Landing Pages** | Promo campaigns, small-business packages, seasonal discounts, website + maintenance bundles |
 
 ---
 
@@ -65,7 +69,7 @@ It is built on two ideas:
 | Layer | Technology | Role |
 | --- | --- | --- |
 | Frontend | **Astro** | Routing, SSG/SSR, layouts, SEO |
-| Interactivity | **Vue.js** (Astro Islands) | Booking, availability, reservations, filters |
+| Interactivity | **Vue.js** (Astro Islands) | Ordering, availability, consultation booking, filters |
 | Language | **TypeScript** | Type safety across web and CMS |
 | Styling | **Tailwind CSS** | Utility-first design system |
 | Headless CMS | **Strapi** | Content types, admin panel, REST API, custom endpoints |
@@ -76,7 +80,7 @@ It is built on two ideas:
 | Service | Purpose |
 | --- | --- |
 | Cloudinary | Media storage & image optimization |
-| Midtrans | Payment gateway |
+| Midtrans | Payment gateway (project deposits) |
 | SMTP / Nodemailer | Transactional email notifications |
 
 ---
@@ -85,12 +89,12 @@ It is built on two ideas:
 
 ```mermaid
 flowchart TD
-    Guest(["👤 Guest / Visitor"])
+    Client(["👤 Client / Visitor"])
     Editor(["✍️ Content Editor"])
 
     subgraph WEB["apps/web · Astro"]
-        Pages["📄 Content & SEO Pages<br/>Profile · Villas · Restaurant · Products<br/>Blog · Events · Guest Guide · Landing Pages"]
-        Islands["🧩 Vue Islands<br/>Booking Form · Availability · Reservations<br/>Product Filter · Gallery"]
+        Pages["📄 Content & SEO Pages<br/>Profile · Packages · Portfolio · Consultation<br/>Products · Blog · Events · Client Guide · Landing Pages"]
+        Islands["🧩 Vue Islands<br/>Order Form · Availability · Consultation Booking<br/>Product Filter · Gallery"]
     end
 
     subgraph CMS["apps/cms · Strapi"]
@@ -104,8 +108,8 @@ flowchart TD
     Midtrans["💳 Midtrans"]
     SMTP["✉️ SMTP"]
 
-    Guest --> Pages
-    Guest --> Islands
+    Client --> Pages
+    Client --> Islands
     Pages -- "fetch at build / request time" --> API
     Islands -- "fetch at runtime" --> API
     Editor --> Admin
@@ -120,7 +124,7 @@ flowchart TD
 | --- | --- |
 | **Astro** | Main frontend: routing, static rendering, SSR where needed, SEO, layouts, performance |
 | **Vue.js** | Client-side interactivity, loaded only where needed through islands, so most pages ship minimal JS |
-| **Strapi** | Single source of truth for content, plus custom endpoints for bookings & reservations |
+| **Strapi** | Single source of truth for content, plus custom endpoints for orders & consultation bookings |
 | **Supabase PostgreSQL** | Persistent storage for content and transactional data |
 
 ➡️ See [docs/architecture.md](docs/architecture.md) for the full breakdown.
@@ -140,36 +144,36 @@ flowchart LR
     E --> F["Static pages generated<br/>& deployed"]
 ```
 
-### Villa booking
+### Project ordering
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor G as Guest
+    actor C as Client
     participant W as Astro + Vue Island
     participant S as Strapi API
     participant DB as PostgreSQL
     participant M as Midtrans
     participant E as Email
 
-    G->>W: Select villa, dates & guests
-    W->>S: GET /villas/:id/availability
-    S->>DB: Check overlapping bookings
-    DB-->>S: Available + price
-    S-->>W: Availability & total price
-    G->>W: Fill booking form
-    W->>S: POST /bookings
-    S->>DB: Create booking (pending_payment)
-    S->>M: Create payment transaction
+    C->>W: Select package, tier, add-ons & start date
+    W->>S: GET /packages/:id/availability
+    S->>DB: Count overlapping active projects
+    DB-->>S: Slot available + price
+    S-->>W: Availability, total & deposit
+    C->>W: Fill project brief form
+    W->>S: POST /orders
+    S->>DB: Create order (pending_payment)
+    S->>M: Create deposit transaction
     M-->>W: Payment page / Snap token
-    G->>M: Complete payment
+    C->>M: Pay deposit
     M->>S: Payment notification (webhook)
-    S->>DB: Update booking → confirmed
+    S->>DB: Update order → confirmed
     S->>E: Send confirmation email
-    E-->>G: Booking confirmation
+    E-->>C: Order confirmation + onboarding guide
 ```
 
-➡️ More flows (booking states, restaurant reservation, rendering, notifications) are in [docs/flows.md](docs/flows.md).
+➡️ More flows (capacity check, order states, consultation booking, rendering, notifications) are in [docs/flows.md](docs/flows.md).
 
 ---
 
@@ -177,10 +181,10 @@ sequenceDiagram
 
 | Page | Strategy |
 | --- | --- |
-| Home · About · Villa Detail · Restaurant | `SSG` |
-| Blog · Blog Detail · Events · Guest Guide · Landing Pages | `SSG` |
-| Villa Listing · Product Catalog | `SSG` / `SSR` |
-| Booking · Availability · Reservations | `Vue Island` + Dynamic API |
+| Home · About · Package Detail · Portfolio · Consultation | `SSG` |
+| Blog · Blog Detail · Events · Client Guide · Landing Pages | `SSG` |
+| Package Listing · Product Catalog | `SSG` / `SSR` |
+| Ordering · Availability · Consultation Booking | `Vue Island` + Dynamic API |
 
 ---
 
@@ -190,7 +194,7 @@ sequenceDiagram
 <summary><b>Planned monorepo layout</b></summary>
 
 ```text
-luxury-hospitality-platform/
+service/
 ├── apps/
 │   ├── web/                    # Astro frontend
 │   │   ├── src/
@@ -228,21 +232,21 @@ luxury-hospitality-platform/
 ## 🗺️ Roadmap
 
 - [ ] **Phase 1: Foundation.** Astro, Vue integration, TypeScript, Tailwind CSS, Strapi, PostgreSQL, environment variables
-- [ ] **Phase 2: CMS.** Content models for villas, facilities, restaurants, menus, products, blog posts, events, testimonials, landing pages, guest guides
-- [ ] **Phase 3: Core Website.** Home, company profile, villas, restaurant, product catalog, blog, events, guest guide
-- [ ] **Phase 4: Interactive Features.** Booking, availability checker, date picker, product filtering, restaurant reservation, gallery
+- [ ] **Phase 2: CMS.** Content models for packages, features, portfolio projects, consultations, add-ons, digital products, blog posts, events, testimonials, landing pages, client guides
+- [ ] **Phase 3: Core Website.** Home, agency profile, packages, portfolio, consultation, digital products, blog, events, client guide
+- [ ] **Phase 4: Interactive Features.** Project ordering, capacity checker, start-date picker, product filtering, consultation booking, gallery
 - [ ] **Phase 5: Integrations.** Cloudinary, email notifications, payment gateway, analytics
 - [ ] **Phase 6: Optimization.** Technical SEO, sitemap, structured data, Open Graph, image optimization, accessibility, Lighthouse audit
 
 <details>
 <summary><b>Future improvements</b></summary>
 
-- User authentication & customer dashboard
-- Booking history & cancellation
-- Online payment & promo codes
+- User authentication & client portal (project progress, deliverables, invoices)
+- Order history, revision requests & cancellation
+- Online payment for the final balance & promo codes
 - Multi-language & multi-currency support
-- Wishlist
-- Admin booking & restaurant reservation dashboard
+- Wishlist for digital products
+- Admin dashboard for orders & consultation bookings
 - Email & WhatsApp notifications
 - Reviews and ratings
 
@@ -268,7 +272,7 @@ luxury-hospitality-platform/
 | Document | Description |
 | --- | --- |
 | [Architecture](docs/architecture.md) | System components, responsibilities, rendering & data fetching |
-| [Flows](docs/flows.md) | Content publishing, booking, payment, reservation & notification flows |
+| [Flows](docs/flows.md) | Content publishing, ordering, payment, consultation booking & notification flows |
 | [Content Model](docs/content-model.md) | Strapi content types and their relationships |
 
 ---

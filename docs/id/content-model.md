@@ -1,41 +1,41 @@
 # 🗂️ Content Model
 
-[← Back to README](../README.md) · [🇮🇩 Bahasa Indonesia](id/content-model.md)
+[← Kembali ke README](../../README.id.md) · [🇬🇧 English](../content-model.md)
 
-These are the proposed **Strapi content types** and how they relate to each other.
+Berikut **content type Strapi** yang diusulkan beserta relasi antar-content type.
 
 > [!NOTE]
-> This is a design draft. Field names and relations may change during Phase 2 (CMS).
+> Ini masih draf desain. Nama field dan relasi bisa berubah selama Fase 2 (CMS).
 
-## Table of Contents
+## Daftar Isi
 
-- [Overview](#overview)
-- [Packages & Ordering](#packages--ordering)
-- [Consultation](#consultation)
-- [Digital Products](#digital-products)
+- [Ringkasan](#ringkasan)
+- [Paket & Pemesanan](#paket--pemesanan)
+- [Konsultasi](#konsultasi)
+- [Produk Digital](#produk-digital)
 - [Blog](#blog)
-- [Events](#events)
-- [Landing Pages](#landing-pages)
+- [Event](#event)
+- [Landing Page](#landing-page)
 - [Global & Single Types](#global--single-types)
 
 ---
 
-## Overview
+## Ringkasan
 
-| Group | Collection Types | Single Types |
+| Grup | Collection Types | Single Types |
 | --- | --- | --- |
-| Packages & Ordering | `Package`, `Feature`, `PortfolioProject`, `Order` | — |
-| Consultation | `Consultation`, `AddOnCategory`, `AddOn`, `ConsultationBooking` | — |
-| Digital Products | `Product`, `ProductCategory` | — |
+| Paket & Pemesanan | `Package`, `Feature`, `PortfolioProject`, `Order` | — |
+| Konsultasi | `Consultation`, `AddOnCategory`, `AddOn`, `ConsultationBooking` | — |
+| Produk Digital | `Product`, `ProductCategory` | — |
 | Blog | `Post`, `Category`, `Tag` | — |
-| Events | `Event` | — |
+| Event | `Event` | — |
 | Marketing | `LandingPage`, `Testimonial` | — |
-| Client Guide | `ClientGuide`, `Faq` | — |
+| Panduan Klien | `ClientGuide`, `Faq` | — |
 | Global | — | `Homepage`, `About`, `SiteSetting` |
 
 ---
 
-## Packages & Ordering
+## Paket & Pemesanan
 
 ```mermaid
 erDiagram
@@ -95,15 +95,15 @@ erDiagram
     }
 ```
 
-`Package.type` is one of `landing_page`, `company_profile`, `ecommerce`, or `web_app`.
+`Package.type` berisi salah satu dari `landing_page`, `company_profile`, `ecommerce`, atau `web_app`.
 
-`Package.tiers` is a repeatable `package.tier` component (for example *Basic*, *Pro*, *Enterprise*) with `name`, `price`, `duration_weeks`, `revision_count`, and `features`.
+`Package.tiers` adalah komponen `package.tier` yang repeatable (misalnya *Basic*, *Pro*, *Enterprise*) dengan field `name`, `price`, `duration_weeks`, `revision_count`, dan `features`.
 
-`Order.status` is one of `pending_payment`, `confirmed`, `in_progress`, `completed`, `cancelled`, or `expired`. See [Order Status Lifecycle](flows.md#6-order-status-lifecycle).
+`Order.status` berisi salah satu dari `pending_payment`, `confirmed`, `in_progress`, `completed`, `cancelled`, atau `expired`. Lihat [Siklus Status Order](flows.md#6-siklus-status-order).
 
 ---
 
-## Consultation
+## Konsultasi
 
 ```mermaid
 erDiagram
@@ -147,15 +147,15 @@ erDiagram
     }
 ```
 
-Example consultations are *Discovery Call*, *Technical Audit*, and *Website Review*. `Consultation.mode` is `online` or `offline`.
+Contoh jenis konsultasi: *Discovery Call*, *Technical Audit*, dan *Website Review*. `Consultation.mode` berisi `online` atau `offline`.
 
-Add-ons are grouped into categories such as *Extra Features*, *Maintenance Plans*, and *SEO & Content*. The same add-ons can be attached to an `Order`, and `extra_weeks` extends the project timeline.
+Add-on dikelompokkan ke dalam kategori seperti *Fitur Tambahan*, *Paket Maintenance*, dan *SEO & Konten*. Add-on yang sama bisa ditambahkan ke `Order`, dan field `extra_weeks` memperpanjang timeline project.
 
-`ConsultationBooking.status` is one of `pending`, `confirmed`, `declined`, `cancelled`, `completed`, or `no_show`.
+`ConsultationBooking.status` berisi salah satu dari `pending`, `confirmed`, `declined`, `cancelled`, `completed`, atau `no_show`.
 
 ---
 
-## Digital Products
+## Produk Digital
 
 ```mermaid
 erDiagram
@@ -178,7 +178,7 @@ erDiagram
     }
 ```
 
-Example categories are *Website Templates*, *UI Kits*, and *Starter Kits*.
+Contoh kategori: *Template Website*, *UI Kit*, dan *Starter Kit*.
 
 ---
 
@@ -209,11 +209,11 @@ erDiagram
     }
 ```
 
-Example categories are *Tutorials*, *Case Studies*, and *Business & Digital*.
+Contoh kategori: *Tutorial*, *Studi Kasus*, dan *Bisnis & Digital*.
 
 ---
 
-## Events
+## Event
 
 ```mermaid
 erDiagram
@@ -231,13 +231,13 @@ erDiagram
     }
 ```
 
-`Event.type` is one of `webinar`, `workshop`, `bootcamp`, or `corporate_training`.
+`Event.type` berisi salah satu dari `webinar`, `workshop`, `bootcamp`, atau `corporate_training`.
 
 ---
 
-## Landing Pages
+## Landing Page
 
-Landing pages are built from **dynamic zones**, so editors can compose campaign pages from reusable blocks without writing code.
+Landing page disusun dari **dynamic zone**, jadi editor bisa merangkai halaman kampanye dari block yang reusable tanpa menulis kode.
 
 ```mermaid
 flowchart LR
@@ -252,25 +252,25 @@ flowchart LR
     DZ --> Q["blocks.faq"]
 ```
 
-Each block maps 1:1 to an Astro component in `apps/web/src/components/astro/blocks/`.
+Setiap block dipetakan 1:1 ke komponen Astro di `apps/web/src/components/astro/blocks/`.
 
-Use cases include promo campaigns, small-business packages, seasonal discounts, website + maintenance bundles, and event campaigns.
+Contoh penggunaannya: kampanye promo, paket UMKM, diskon musiman, bundling website + maintenance, dan kampanye event.
 
 ---
 
 ## Global & Single Types
 
-| Type | Fields |
+| Type | Field |
 | --- | --- |
-| `Homepage` | Hero, featured packages, portfolio highlights, work process, testimonials, SEO |
-| `About` | Story, team, work process, tech stack, gallery, SEO |
-| `SiteSetting` | Site name, logo, contact info, social links, `project_capacity`, `deposit_percentage`, `order_lead_days`, default SEO |
-| `ClientGuide` | Title, slug, category (`onboarding`, `workflow`, `policy`, `info`), content |
-| `Faq` | Question, answer, category, order |
+| `Homepage` | Hero, paket unggulan, sorotan portofolio, proses kerja, testimoni, SEO |
+| `About` | Cerita, tim, proses kerja, tech stack, galeri, SEO |
+| `SiteSetting` | Nama situs, logo, info kontak, link media sosial, `project_capacity`, `deposit_percentage`, `order_lead_days`, SEO default |
+| `ClientGuide` | Judul, slug, kategori (`onboarding`, `workflow`, `policy`, `info`), konten |
+| `Faq` | Pertanyaan, jawaban, kategori, urutan |
 
-**Shared components**
+**Komponen bersama**
 
-| Component | Fields |
+| Komponen | Field |
 | --- | --- |
 | `shared.seo` | `meta_title`, `meta_description`, `og_image`, `canonical_url`, `no_index` |
 | `shared.contact` | `phone`, `whatsapp`, `email`, `address`, `map_url` |
