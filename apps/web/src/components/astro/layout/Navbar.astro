@@ -1,0 +1,110 @@
+---
+import { CodeXml, Menu, X } from '@lucide/astro';
+import Button from '../ui/Button.astro';
+import { isActive, navItems } from '../../../utils/navigation';
+
+interface Props {
+  siteName: string;
+}
+
+const { siteName } = Astro.props;
+const pathname = Astro.url.pathname;
+---
+
+<header class="fixed top-4 right-4 left-4 z-50 sm:left-20 2xl:left-4">
+  <nav
+    aria-label="Navigasi utama"
+    class="mx-auto max-w-6xl rounded-[28px] border border-line bg-gray-900/90 shadow-2xl shadow-black/40 backdrop-blur-xl"
+  >
+    <div class="flex h-14 items-center justify-between gap-4 pr-2 pl-3">
+      <a href="/" class="focus-ring flex items-center gap-2.5 rounded-full pr-2 text-sm font-medium">
+        <span class="grid size-8 place-items-center rounded-full bg-ink text-canvas">
+          <CodeXml size={16} stroke-width={2} />
+        </span>
+        {siteName}
+      </a>
+
+      <ul class="hidden items-center gap-1 lg:flex">
+        {
+          navItems.map((item) => {
+            const active = isActive(item.href, pathname);
+            return (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={active ? 'page' : undefined}
+                  class:list={[
+                    'focus-ring inline-flex h-10 items-center rounded-full px-3.5 text-sm transition-colors duration-200',
+                    active ? 'bg-ink text-canvas' : 'text-muted hover:bg-white/6 hover:text-ink',
+                  ]}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      <div class="flex items-center gap-1">
+        <Button href="/packages">Pesan proyek</Button>
+        <button
+          type="button"
+          data-nav-toggle
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+          aria-label="Menu"
+          class="group focus-ring grid size-11 cursor-pointer place-items-center rounded-full text-ink transition-colors duration-200 hover:bg-white/6 lg:hidden"
+        >
+          <Menu size={20} class="group-aria-expanded:hidden" />
+          <X size={20} class="hidden group-aria-expanded:block" />
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-nav" data-nav-panel hidden class="border-t border-line p-2 lg:hidden">
+      <ul class="grid gap-1">
+        {
+          navItems.map((item) => {
+            const active = isActive(item.href, pathname);
+            return (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={active ? 'page' : undefined}
+                  class:list={[
+                    'focus-ring flex h-11 items-center rounded-2xl px-4 text-sm transition-colors duration-200',
+                    active ? 'bg-ink text-canvas' : 'text-ink-soft hover:bg-white/6',
+                  ]}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const panel = document.querySelector<HTMLElement>('[data-nav-panel]');
+
+  function setOpen(open: boolean) {
+    toggle?.setAttribute('aria-expanded', String(open));
+    panel?.toggleAttribute('hidden', !open);
+  }
+
+  toggle?.addEventListener('click', () => {
+    setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+</script>

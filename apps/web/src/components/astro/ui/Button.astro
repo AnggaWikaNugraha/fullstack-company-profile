@@ -1,0 +1,27 @@
+---
+interface Props {
+  href: string;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  class?: string;
+}
+
+const { href, variant = 'primary', class: className } = Astro.props;
+
+// Padding lives in the variants so ghost links align flush with surrounding text.
+const variants = {
+  primary: 'px-5 bg-ink text-canvas hover:bg-white/85',
+  secondary: 'px-5 border border-line-strong text-ink hover:bg-white/6',
+  ghost: 'text-muted hover:text-ink',
+};
+---
+
+<a
+  href={href}
+  class:list={[
+    'focus-ring inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full text-sm font-medium transition-colors duration-200',
+    variants[variant],
+    className,
+  ]}
+>
+  <slot />
+</a>

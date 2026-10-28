@@ -1,0 +1,31 @@
+---
+import type { WorkStep } from '@service/shared';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props {
+  steps: WorkStep[];
+}
+
+const { steps } = Astro.props;
+---
+
+<section aria-labelledby="process-title" class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-20">
+  <SectionHeading
+    id="process-title"
+    eyebrow="Cara kerja"
+    title="Dari konsultasi sampai website online"
+    description="Alur yang sama untuk setiap proyek, jadi Anda selalu tahu tahap berikutnya."
+  />
+
+  <ol class="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
+    {
+      steps.map((step, index) => (
+        <li class="bg-canvas p-6">
+          <p class="font-mono text-xs text-muted">{String(index + 1).padStart(2, '0')}</p>
+          <h3 class="mt-6 font-medium">{step.title}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted">{step.description}</p>
+        </li>
+      ))
+    }
+  </ol>
+</section>

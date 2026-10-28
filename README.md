@@ -20,11 +20,13 @@ Agency profile · Service packages · Project ordering · Consultation booking �
 ![Strapi](https://img.shields.io/badge/Strapi-4945FF?style=flat-square&logo=strapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white)
+![Turborepo](https://img.shields.io/badge/Turborepo-EF4444?style=flat-square&logo=turborepo&logoColor=white)
 
 [Overview](#-overview) ·
 [Features](#-features) ·
 [Architecture](#-architecture) ·
 [Flows](#-core-flows) ·
+[Getting Started](#-getting-started) ·
 [Roadmap](#-roadmap) ·
 [Docs](#-documentation)
 
@@ -44,7 +46,7 @@ It is built on two ideas:
 The site is a standalone project, linked from the **Services** menu of my [portfolio](https://port-tau-azure.vercel.app/).
 
 > [!NOTE]
-> 🚧 This project is under active development. This repository currently contains the **documentation and flow design**. Implementation follows the [roadmap](#-roadmap).
+> 🚧 This project is under active development. The **monorepo setup** and the **home page UI** (with placeholder content) are in place. The CMS and integrations follow the [roadmap](#-roadmap).
 
 ---
 
@@ -74,6 +76,7 @@ The site is a standalone project, linked from the **Services** menu of my [portf
 | Styling | **Tailwind CSS** | Utility-first design system |
 | Headless CMS | **Strapi** | Content types, admin panel, REST API, custom endpoints |
 | Database | **PostgreSQL** on **Supabase** | Primary data store for Strapi |
+| Monorepo | **Turborepo** + npm workspaces | Task runner, build caching, shared packages |
 
 **Planned integrations**
 
@@ -199,11 +202,16 @@ service/
 │   ├── web/                    # Astro frontend
 │   │   ├── src/
 │   │   │   ├── components/
-│   │   │   │   ├── astro/      # Static components
+│   │   │   │   ├── astro/      # Static components; shared ones (e.g. PackageCard) sit here
+│   │   │   │   │   ├── ui/     # Base building blocks (Button, SectionHeading)
+│   │   │   │   │   ├── layout/ # Site frame (Navbar, Footer)
+│   │   │   │   │   ├── blocks/ # Landing page blocks (Strapi dynamic zone)
+│   │   │   │   │   └── home/   # Sections used only on the home page
 │   │   │   │   └── vue/        # Interactive islands
 │   │   │   ├── layouts/
 │   │   │   ├── pages/
 │   │   │   ├── services/       # Strapi API clients
+│   │   │   ├── styles/         # Global CSS & design tokens
 │   │   │   ├── utils/
 │   │   │   └── types/
 │   │   └── astro.config.mjs
@@ -219,13 +227,40 @@ service/
 ├── packages/
 │   └── shared/                 # Shared types & utilities
 │
+├── design-system/              # UI design rules (UI UX Pro Max)
 ├── docs/                       # Project documentation
 ├── .env.example
 ├── package.json
+├── turbo.json                  # Turborepo task pipeline
 └── README.md
 ```
 
 </details>
+
+---
+
+## 🚀 Getting Started
+
+**Requirements:** Node.js 22.12+ and npm. Python 3 is only needed for the UI UX Pro Max design scripts.
+
+```bash
+npm install        # install all workspaces from the repo root
+npm run dev        # start the dev servers (web: http://localhost:4321)
+npm run build      # build every app (cached by Turborepo)
+npm run check      # type-check
+npm run preview    # serve the production build of apps/web
+```
+
+The monorepo uses **npm workspaces** for dependencies and **Turborepo** to run tasks across `apps/*` and `packages/*`. Turborepo caches task results, so a build with no changes is replayed from the cache instead of running again.
+
+### Deployment
+
+| App | Target | Notes |
+| --- | --- | --- |
+| `apps/web` | Vercel | Root Directory `apps/web`. Vercel detects Turborepo and runs `turbo run build` |
+| `apps/cms` | Node.js server (host to be decided) | Strapi is a long-running server (admin panel, webhooks), so it does not run on serverless platforms |
+
+Build-time environment variables must be listed in `turbo.json` (`web#build.env`). Otherwise Turborepo can reuse a cached build made with different values. The Strapi publish webhook calls a Vercel Deploy Hook (`DEPLOY_HOOK_URL`) to rebuild the site.
 
 ---
 

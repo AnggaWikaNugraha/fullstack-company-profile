@@ -1,0 +1,51 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+/* Design tokens: see design-system/service/MASTER.md. Grays match the portfolio. */
+@theme {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+
+  --color-canvas: var(--color-gray-950);
+  --color-surface: var(--color-gray-900);
+  --color-raised: var(--color-gray-800);
+  --color-ink: var(--color-gray-50);
+  --color-ink-soft: var(--color-gray-200);
+  --color-muted: var(--color-gray-400);
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.15);
+}
+
+/* Visible keyboard focus on any background (MASTER.md → Effects) */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: 2px;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+  }
+
+  ::selection {
+    @apply bg-ink text-canvas;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

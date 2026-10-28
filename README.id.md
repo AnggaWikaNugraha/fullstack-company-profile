@@ -20,11 +20,13 @@ Profil agensi · Paket layanan · Pemesanan project · Booking konsultasi · Pro
 ![Strapi](https://img.shields.io/badge/Strapi-4945FF?style=flat-square&logo=strapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white)
+![Turborepo](https://img.shields.io/badge/Turborepo-EF4444?style=flat-square&logo=turborepo&logoColor=white)
 
 [Ringkasan](#-ringkasan) ·
 [Fitur](#-fitur) ·
 [Arsitektur](#-arsitektur) ·
 [Alur](#-alur-utama) ·
+[Menjalankan](#-menjalankan-project) ·
 [Roadmap](#-roadmap) ·
 [Dokumentasi](#-dokumentasi)
 
@@ -44,7 +46,7 @@ Project ini dibangun di atas dua ide:
 Website ini adalah project terpisah yang ditautkan dari menu **Services** di [portofolio](https://port-tau-azure.vercel.app/) saya.
 
 > [!NOTE]
-> 🚧 Project ini masih dalam pengembangan. Saat ini repository baru berisi **dokumentasi dan desain alur**. Implementasi mengikuti [roadmap](#-roadmap).
+> 🚧 Project ini masih dalam pengembangan. **Setup monorepo** dan **UI halaman Home** (dengan konten contoh) sudah ada. CMS dan integrasi menyusul sesuai [roadmap](#-roadmap).
 
 ---
 
@@ -74,6 +76,7 @@ Website ini adalah project terpisah yang ditautkan dari menu **Services** di [po
 | Styling | **Tailwind CSS** | Design system berbasis utility |
 | Headless CMS | **Strapi** | Content type, admin panel, REST API, custom endpoint |
 | Database | **PostgreSQL** di **Supabase** | Penyimpanan data utama untuk Strapi |
+| Monorepo | **Turborepo** + npm workspaces | Menjalankan task, cache build, package bersama |
 
 **Integrasi yang direncanakan**
 
@@ -199,11 +202,16 @@ service/
 │   ├── web/                    # Frontend Astro
 │   │   ├── src/
 │   │   │   ├── components/
-│   │   │   │   ├── astro/      # Komponen statis
+│   │   │   │   ├── astro/      # Komponen statis; yang dipakai bersama (mis. PackageCard) di level ini
+│   │   │   │   │   ├── ui/     # Komponen dasar (Button, SectionHeading)
+│   │   │   │   │   ├── layout/ # Bingkai situs (Navbar, Footer)
+│   │   │   │   │   ├── blocks/ # Blok landing page (dynamic zone Strapi)
+│   │   │   │   │   └── home/   # Section khusus halaman Home
 │   │   │   │   └── vue/        # Island interaktif
 │   │   │   ├── layouts/
 │   │   │   ├── pages/
 │   │   │   ├── services/       # Client API Strapi
+│   │   │   ├── styles/         # CSS global & design token
 │   │   │   ├── utils/
 │   │   │   └── types/
 │   │   └── astro.config.mjs
@@ -219,13 +227,40 @@ service/
 ├── packages/
 │   └── shared/                 # Type & utilitas bersama
 │
+├── design-system/              # Aturan desain UI (UI UX Pro Max)
 ├── docs/                       # Dokumentasi project
 ├── .env.example
 ├── package.json
+├── turbo.json                  # Pipeline task Turborepo
 └── README.md
 ```
 
 </details>
+
+---
+
+## 🚀 Menjalankan Project
+
+**Kebutuhan:** Node.js 22.12+ dan npm. Python 3 hanya dibutuhkan untuk script desain UI UX Pro Max.
+
+```bash
+npm install        # install semua workspace dari root repo
+npm run dev        # jalankan dev server (web: http://localhost:4321)
+npm run build      # build semua app (di-cache oleh Turborepo)
+npm run check      # cek type
+npm run preview    # jalankan hasil build production apps/web
+```
+
+Monorepo ini memakai **npm workspaces** untuk dependency dan **Turborepo** untuk menjalankan task di `apps/*` dan `packages/*`. Turborepo menyimpan hasil task di cache, jadi build tanpa perubahan cukup diputar ulang dari cache, tidak dijalankan lagi.
+
+### Deployment
+
+| App | Tujuan | Catatan |
+| --- | --- | --- |
+| `apps/web` | Vercel | Root Directory `apps/web`. Vercel mendeteksi Turborepo dan menjalankan `turbo run build` |
+| `apps/cms` | Server Node.js (host belum ditentukan) | Strapi adalah server yang berjalan terus (admin panel, webhook), jadi tidak berjalan di platform serverless |
+
+Environment variable yang dipakai saat build wajib didaftarkan di `turbo.json` (`web#build.env`). Kalau tidak, Turborepo bisa memakai ulang build dari cache yang dibuat dengan nilai berbeda. Webhook publish di Strapi memanggil Deploy Hook Vercel (`DEPLOY_HOOK_URL`) untuk me-rebuild situs.
 
 ---
 

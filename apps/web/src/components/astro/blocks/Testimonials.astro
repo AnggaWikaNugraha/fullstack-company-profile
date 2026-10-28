@@ -1,0 +1,48 @@
+---
+import type { Testimonial } from '@service/shared';
+import { Star } from '@lucide/astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props {
+  testimonials: Testimonial[];
+}
+
+const { testimonials } = Astro.props;
+
+function initials(name: string): string {
+  return name
+    .split(' ')
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+}
+---
+
+<section aria-labelledby="testimonials-title" class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-20">
+  <SectionHeading id="testimonials-title" eyebrow="Testimoni" title="Kata klien" />
+
+  <div class="mt-12 grid gap-4 md:grid-cols-3">
+    {
+      testimonials.map((item) => (
+        <figure class="flex flex-col rounded-2xl border border-line bg-surface p-6">
+          <div role="img" aria-label={`Rating ${item.rating} dari 5`} class="flex gap-1">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Star size={16} class={n <= item.rating ? 'fill-current text-ink' : 'text-white/20'} />
+            ))}
+          </div>
+          <blockquote class="mt-5 leading-relaxed text-ink-soft">“{item.quote}”</blockquote>
+          <figcaption class="mt-auto flex items-center gap-3 pt-8">
+            <span aria-hidden="true" class="grid size-10 place-items-center rounded-full bg-raised font-mono text-xs text-ink-soft">
+              {initials(item.name)}
+            </span>
+            <span>
+              <span class="block text-sm font-medium">{item.name}</span>
+              <span class="block text-sm text-muted">{item.company}</span>
+            </span>
+          </figcaption>
+        </figure>
+      ))
+    }
+  </div>
+</section>

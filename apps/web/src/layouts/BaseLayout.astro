@@ -1,0 +1,49 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/astro/layout/Navbar.astro';
+import Footer from '../components/astro/layout/Footer.astro';
+import PortfolioSidebar from '../components/astro/layout/PortfolioSidebar.astro';
+import { getSiteSetting } from '../services/strapi';
+
+interface Props {
+  title?: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const site = await getSiteSetting();
+const pageTitle = title ? `${title} · ${site.site_name}` : `${site.site_name} · Jasa Pembuatan Website`;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#030712" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+  </head>
+  <body class="min-h-dvh">
+    <a
+      href="#main"
+      class="sr-only rounded-full bg-ink px-4 py-2 text-sm font-medium text-canvas focus:not-sr-only focus:fixed focus:top-20 focus:left-4 focus:z-60"
+    >
+      Langsung ke konten
+    </a>
+    <PortfolioSidebar />
+    <Navbar siteName={site.site_name} />
+    <!-- Room for the sidebar: bottom bar on phones, left rail until the centered max-w-6xl container clears it at 2xl -->
+    <div class="pb-24 sm:pb-0 sm:pl-20 2xl:pl-0">
+      <main id="main" class="pt-24">
+        <slot />
+      </main>
+      <Footer site={site} />
+    </div>
+  </body>
+</html>

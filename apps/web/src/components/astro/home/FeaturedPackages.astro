@@ -1,0 +1,31 @@
+---
+import type { Package } from '@service/shared';
+import { ArrowRight } from '@lucide/astro';
+import PackageCard from '../PackageCard.astro';
+import SectionHeading from '../ui/SectionHeading.astro';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  packages: Package[];
+}
+
+const { packages } = Astro.props;
+---
+
+<section aria-labelledby="packages-title" class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-20">
+  <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+    <SectionHeading
+      id="packages-title"
+      eyebrow="Paket layanan"
+      title="Pilih paket sesuai kebutuhan"
+      description="Harga transparan sejak awal. Jadwal mulai bisa dicek langsung di halaman tiap paket."
+    />
+    <Button href="/packages" variant="ghost" class="self-start md:self-auto">
+      Semua paket <ArrowRight size={16} />
+    </Button>
+  </div>
+
+  <div class="mt-12 grid gap-4 md:grid-cols-3">
+    {packages.map((pkg) => <PackageCard pkg={pkg} />)}
+  </div>
+</section>

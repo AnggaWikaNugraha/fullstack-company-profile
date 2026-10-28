@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/astro/blocks/Hero.astro';
+import Testimonials from '../components/astro/blocks/Testimonials.astro';
+import Cta from '../components/astro/blocks/Cta.astro';
+import FeaturedPackages from '../components/astro/home/FeaturedPackages.astro';
+import PortfolioHighlights from '../components/astro/home/PortfolioHighlights.astro';
+import WorkProcess from '../components/astro/home/WorkProcess.astro';
+import { getHomepage } from '../services/strapi';
+import { packageTypeLabel } from '../utils/format';
+
+const home = await getHomepage();
+---
+
+<BaseLayout description={home.hero.subtitle}>
+  <Hero
+    eyebrow="Jasa pembuatan website"
+    title={home.hero.title}
+    subtitle={home.hero.subtitle}
+    primary={{ href: '/packages', label: 'Lihat paket' }}
+    secondary={{ href: '/consultation', label: 'Konsultasi gratis' }}
+    highlights={Object.values(packageTypeLabel)}
+  />
+  <FeaturedPackages packages={home.featured_packages} />
+  <PortfolioHighlights projects={home.portfolio_highlights} />
+  <WorkProcess steps={home.work_process} />
+  <Testimonials testimonials={home.testimonials} />
+  <Cta
+    title="Belum yakin paket mana yang cocok?"
+    description="Ceritakan kebutuhan Anda lewat konsultasi singkat. Gratis, tanpa kewajiban memesan."
+    primary={{ href: '/consultation', label: 'Jadwalkan konsultasi' }}
+    secondary={{ href: '/packages', label: 'Lihat paket' }}
+  />
+</BaseLayout>

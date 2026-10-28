@@ -1,0 +1,18 @@
+{
+  "name": "service",
+  "private": true,
+  "packageManager": "npm@11.19.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "check": "turbo run check",
+    "preview": "turbo run preview --filter=web"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.10"
+  }
+}

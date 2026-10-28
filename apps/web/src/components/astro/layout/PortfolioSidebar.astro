@@ -1,0 +1,48 @@
+---
+// Same floating side navigation as the portfolio, so visitors arriving from it keep their way around.
+// Left and vertical from `sm`, a bottom bar on phones (like the portfolio's Projects page).
+import { BriefcaseBusiness, FileText, FolderKanban, House, Languages, UserRound } from '@lucide/astro';
+import { portfolioNavItems, type PortfolioNavKey } from '../../../utils/navigation';
+
+const icons: Record<PortfolioNavKey, typeof House> = {
+  home: House,
+  projects: FolderKanban,
+  services: BriefcaseBusiness,
+  blog: FileText,
+  about: UserRound,
+  language: Languages,
+};
+
+const onServiceHome = Astro.url.pathname === '/';
+---
+
+<nav
+  aria-label="Navigasi portfolio"
+  class="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 gap-1 rounded-full border border-line bg-gray-900/90 p-1.5 text-muted shadow-2xl shadow-black/40 backdrop-blur-xl sm:top-1/2 sm:bottom-auto sm:left-4 sm:translate-x-0 sm:-translate-y-1/2 sm:flex-col xl:left-6"
+>
+  {
+    portfolioNavItems.map((item) => {
+      const Icon = icons[item.key];
+      const active = item.key === 'services';
+      return (
+        <a
+          href={item.href}
+          aria-label={item.label}
+          aria-current={active ? (onServiceHome ? 'page' : 'true') : undefined}
+          class:list={[
+            'group focus-ring relative grid size-11 cursor-pointer place-items-center rounded-full transition-colors duration-200',
+            active ? 'bg-ink text-canvas shadow-lg shadow-black/30' : 'hover:bg-white/8 hover:text-ink',
+          ]}
+        >
+          <Icon size={18} stroke-width={1.8} />
+          <span
+            aria-hidden="true"
+            class="pointer-events-none absolute left-full ml-3 hidden translate-x-1 rounded-lg border border-line bg-gray-900 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap text-ink-soft opacity-0 shadow-xl transition duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 sm:block"
+          >
+            {item.label}
+          </span>
+        </a>
+      );
+    })
+  }
+</nav>
